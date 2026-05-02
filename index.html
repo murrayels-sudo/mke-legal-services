@@ -543,7 +543,8 @@ tbody tr:hover td{background:#fafaf8}
       <div class="form-row full"><div class="fgroup span2"><label>Document name *</label><input id="doc-name" placeholder="e.g. Contract of Sale — Smith"></div></div>
       <div class="form-row"><div class="fgroup"><label>Client</label><select id="doc-client" onchange="filterMattersForClient('doc-client','doc-matter')"></select></div><div class="fgroup"><label>Matter</label><select id="doc-matter"><option value="">— Select matter —</option></select></div></div>
       <div class="form-row"><div class="fgroup"><label>Document type</label><select id="doc-type"><option>Contract</option><option>Will</option><option>Affidavit</option><option>Correspondence</option><option>Court document</option><option>Invoice</option><option>Agreement</option><option>Deed</option><option>Other</option></select></div><div class="fgroup"><label>Date</label><input id="doc-date" type="date"></div></div>
-      <div class="form-row full"><div class="fgroup span2"><label>Notes / file location</label><textarea id="doc-notes" placeholder="Where the document is filed, or any notes..."></textarea></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Cloud link — OneDrive / Google Drive / iCloud</label><input id="doc-link" placeholder="Paste your OneDrive or Google Drive shareable URL here..."></div></div>
+      <div class="form-row"><div class="fgroup"><label>File format</label><select id="doc-format"><option>Word (.docx)</option><option>PDF</option><option>Excel (.xlsx)</option><option>Email</option><option>Image</option><option>Other</option></select></div><div class="fgroup"><label>Notes / physical location</label><input id="doc-notes" placeholder="e.g. Filed in cabinet 2, folder A"></div></div>
     </div>
     <div class="form-actions"><button class="btn" onclick="closeModal('m-doc')">Cancel</button><button class="btn btn-primary" onclick="saveDoc()">Save record</button></div>
   </div>
