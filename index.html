@@ -177,6 +177,26 @@ tbody tr:hover td{background:#fafaf8}
 
 /* CHANGE PASSWORD */
 #change-pw-msg{font-size:12px;margin-top:8px;min-height:18px}
+/* ACTIVITY LOG */
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-item:hover{background:var(--surface2)}
+.activity-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dot-Court{background:#a32d2d}.dot-Time{background:#1a5fa8}.dot-Phone{background:#2d7a3a}.dot-Disbursement{background:#8a5a0a}.dot-Other{background:#888}.dot-Email{background:#6a3a9a}.dot-Review{background:#1a7a8a}
+.activity-body{flex:1;min-width:0}
+.activity-body strong{font-size:13px;display:block}
+.activity-body small{font-size:11px;color:var(--text3)}
+.activity-amount{font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap;text-align:right}
+.activity-unbilled{display:inline-block;font-size:10px;color:var(--amber);font-weight:600;background:var(--amber-bg);padding:1px 6px;border-radius:999px;margin-top:3px}
+.matter-detail-header{background:var(--navy);color:var(--white);padding:16px 20px;border-radius:var(--radius-lg);margin-bottom:18px}
+.matter-detail-header h3{font-size:16px;font-weight:700}
+.matter-detail-header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px}
+.matter-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.matter-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;text-align:center}
+.matter-stat .val{font-size:18px;font-weight:700;color:var(--navy)}
+.matter-stat .lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;margin-bottom:14px;padding:4px 0}
+.back-btn:hover{color:var(--navy)}
 </style>
 </head>
 <body>
@@ -239,6 +259,10 @@ tbody tr:hover td{background:#fafaf8}
       <a class="nav-item" onclick="showPage('documents')" href="#">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5L9 1z"/><path d="M9 1v4h4"/></svg>
         Documents
+      </a>
+      <a class="nav-item" onclick="showPage('activity')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8h14M1 4h14M1 12h8"/><circle cx="13" cy="12" r="2.5"/><path d="M13 11v1l.7.7"/></svg>
+        Activity Log
       </a>
       <div class="nav-section-label">Accounts</div>
       <a class="nav-item" onclick="showPage('invoices')" href="#">
@@ -308,7 +332,7 @@ tbody tr:hover td{background:#fafaf8}
           <button class="btn btn-primary" onclick="openModal('m-matter')">+ New matter</button>
         </div>
         <div class="card"><div class="table-wrap"><table>
-          <thead><tr><th>File ref</th><th>Client</th><th>Description</th><th>Type</th><th>Rate/hr</th><th>Status</th><th>Opened</th><th></th></tr></thead>
+          <thead><tr><th>File ref</th><th>Client</th><th>Description</th><th>Type</th><th>Rate/hr</th><th>Status</th><th>Opened</th><th>Folder</th><th></th></tr></thead>
           <tbody id="t-matters"></tbody>
         </table></div></div>
       </div>
@@ -327,14 +351,40 @@ tbody tr:hover td{background:#fafaf8}
 
       <!-- DOCUMENTS -->
       <div class="page content" id="page-documents">
+        <div class="alert alert-amber" style="margin-bottom:16px;font-size:12px">
+          <span>📁</span>
+          <span><strong>How to link documents:</strong> Save your file to Google Drive, OneDrive, or iCloud → right-click → Share → Copy link → paste it here. The file opens in one click from any device.</span>
+        </div>
         <div class="search-row">
           <input class="search-input" placeholder="Search documents..." id="s-docs" oninput="renderDocs()">
-          <button class="btn btn-primary" onclick="openModal('m-doc')">+ New record</button>
+          <div style="display:flex;gap:8px">
+            <select class="search-input" id="s-docs-type" onchange="renderDocs()" style="width:160px"><option value="">All types</option><option>Contract</option><option>Will</option><option>Affidavit</option><option>Correspondence</option><option>Court document</option><option>Invoice</option><option>Agreement</option><option>Deed</option><option>Other</option></select>
+            <button class="btn btn-primary" onclick="openModal('m-doc')">+ New record</button>
+          </div>
         </div>
         <div class="card"><div class="table-wrap"><table>
-          <thead><tr><th>Document name</th><th>Client</th><th>Matter</th><th>Type</th><th>Date</th><th>Notes / location</th><th></th></tr></thead>
+          <thead><tr><th>Document name</th><th>Client</th><th>Matter</th><th>Type</th><th>Format</th><th>Date</th><th>Notes</th><th>Open</th><th></th></tr></thead>
           <tbody id="t-docs"></tbody>
         </table></div></div>
+      </div>
+
+      <!-- ACTIVITY LOG -->
+      <div class="page content" id="page-activity">
+        <div id="activity-list-view">
+          <div class="search-row">
+            <select class="search-input" id="act-filter-matter" onchange="renderActivity()" style="width:260px">
+              <option value="">All matters</option>
+            </select>
+            <button class="btn btn-primary" onclick="openModal('m-activity')">+ Log activity</button>
+          </div>
+          <div class="card" id="activity-card">
+            <div class="card-header">
+              <h3 id="activity-card-title">All activity</h3>
+              <div style="display:flex;gap:8px" id="activity-card-actions"></div>
+            </div>
+            <div id="activity-entries"></div>
+          </div>
+        </div>
       </div>
 
       <!-- INVOICES -->
@@ -538,6 +588,51 @@ tbody tr:hover td{background:#fafaf8}
   </div>
 </div>
 
+<!-- ACTIVITY MODAL -->
+<div class="modal-overlay" id="m-activity">
+  <div class="modal">
+    <div class="modal-header"><h3>Log activity</h3><button class="modal-close" onclick="closeModal('m-activity')">×</button></div>
+    <input type="hidden" id="act-id">
+    <div class="form-body">
+      <div class="form-row">
+        <div class="fgroup"><label>Date *</label><input id="act-date" type="date"></div>
+        <div class="fgroup"><label>Activity type *</label>
+          <select id="act-type">
+            <option>Time</option>
+            <option>Court</option>
+            <option>Phone</option>
+            <option>Email</option>
+            <option>Review</option>
+            <option>Disbursement</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fgroup"><label>Client *</label><select id="act-client" onchange="filterMattersForClient('act-client','act-matter');calcActivityAmount()"></select></div>
+        <div class="fgroup"><label>Matter *</label><select id="act-matter" onchange="calcActivityAmount()"><option value="">— Select matter —</option></select></div>
+      </div>
+      <div class="form-row full"><div class="fgroup span2"><label>Description *</label><input id="act-desc" placeholder="e.g. Appeared at Local Court hearing — mention no. 2024/12345"></div></div>
+      <div class="form-row three">
+        <div class="fgroup"><label>Hours</label><input id="act-hours" type="number" step="0.25" min="0" placeholder="1.5" oninput="calcActivityAmount()"></div>
+        <div class="fgroup"><label>Rate ($/hr)</label><input id="act-rate" type="number" placeholder="350" oninput="calcActivityAmount()"></div>
+        <div class="fgroup"><label>Amount ($)</label><input id="act-amount" type="number" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="form-row">
+        <div class="fgroup"><label>Billed status</label>
+          <select id="act-billed">
+            <option value="unbilled">Unbilled</option>
+            <option value="billed">Billed</option>
+            <option value="no-charge">No charge</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Reference / notes</label><input id="act-notes" placeholder="Case ref, court name, etc."></div>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('m-activity')">Cancel</button><button class="btn btn-primary" onclick="saveActivity()">Save activity</button></div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════
 // AUTH
@@ -581,9 +676,9 @@ function changePassword(){
 // ═══════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════
-let db={clients:[],matters:[],appointments:[],documents:[],invoices:[],expenses:[]};
+let db={clients:[],matters:[],appointments:[],documents:[],invoices:[],expenses:[],activities:[]};
 let settings={firm:'Murray Edwards Legal Services',name:'Murray Edwards',phone:'0411 590 065',email:'murrayels@gmail.com',address:'Central Coast, NSW',abn:'22 318 545 945',rate:350};
-try{const s=localStorage.getItem('mel_db');if(s)db=JSON.parse(s);}catch(e){}
+try{const s=localStorage.getItem('mel_db');if(s){db=JSON.parse(s);if(!db.activities)db.activities=[];}}catch(e){}
 try{const s=localStorage.getItem('mel_settings');if(s)settings=Object.assign(settings,JSON.parse(s));}catch(e){}
 
 function save(){try{localStorage.setItem('mel_db',JSON.stringify(db));}catch(e){alert('Storage error: '+e.message);}}
@@ -637,14 +732,14 @@ function clearAllData(){
 // ═══════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════
-const pageTitles={dashboard:'Dashboard',clients:'Clients',matters:'Matters',appointments:'Appointments',documents:'Documents',invoices:'Invoices',expenses:'Expenses',accounts:'Accounts summary',settings:'Settings'};
+const pageTitles={dashboard:'Dashboard',clients:'Clients',matters:'Matters',appointments:'Appointments',documents:'Documents',activity:'Activity Log',invoices:'Invoices',expenses:'Expenses',accounts:'Accounts summary',settings:'Settings'};
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))n.classList.add('active');});
   document.getElementById('page-title').textContent=pageTitles[name]||name;
-  const renders={dashboard:renderDashboard,clients:renderClients,matters:renderMatters,appointments:renderAppts,documents:renderDocs,invoices:renderInvoices,expenses:renderExpenses,accounts:renderAccounts};
+  const renders={dashboard:renderDashboard,clients:renderClients,matters:renderMatters,appointments:renderAppts,documents:renderDocs,activity:renderActivity,invoices:renderInvoices,expenses:renderExpenses,accounts:renderAccounts};
   if(renders[name])renders[name]();
   if(name==='settings'){
     document.getElementById('set-firm').value=settings.firm;
@@ -672,8 +767,9 @@ function openModal(id,editId){
     document.getElementById('inv-due').value=d.toISOString().slice(0,10);
   }
   if(id==='m-appt'&&!editId)document.getElementById('appt-date').value=today();
-  if(id==='m-doc'&&!editId)document.getElementById('doc-date').value=today();
+  if(id==='m-doc'&&!editId){document.getElementById('doc-date').value=today();document.getElementById('doc-link').value='';document.getElementById('doc-notes').value='';}
   if(id==='m-expense'&&!editId)document.getElementById('exp-date').value=today();
+  if(id==='m-activity'&&!editId){document.getElementById('act-date').value=today();document.getElementById('act-billed').value='unbilled';}
   if(id==='m-matter'&&!editId){
     document.getElementById('mat-opened').value=today();
     document.getElementById('mat-rate').value=settings.rate||350;
@@ -689,7 +785,7 @@ function closeModal(id){
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
 
 function populateClientSelects(){
-  ['mat-client','appt-client','inv-client','doc-client'].forEach(sid=>{
+  ['mat-client','appt-client','inv-client','doc-client','act-client'].forEach(sid=>{
     const el=document.getElementById(sid);if(!el)return;
     const val=el.value;
     el.innerHTML='<option value="">— Select client —</option>';
@@ -738,7 +834,7 @@ function renderClients(){
 // ═══════════════════════════════════════════════
 function saveMatter(){
   const eid=v('mat-id');
-  const m={id:eid||uid(),ref:v('mat-ref'),client:v('mat-client'),desc:v('mat-desc'),type:v('mat-type'),status:v('mat-status'),opened:v('mat-opened')||today(),rate:parseFloat(v('mat-rate'))||settings.rate,notes:v('mat-notes')};
+  const m={id:eid||uid(),ref:v('mat-ref'),client:v('mat-client'),desc:v('mat-desc'),type:v('mat-type'),status:v('mat-status'),opened:v('mat-opened')||today(),rate:parseFloat(v('mat-rate'))||settings.rate,folder:v('mat-folder'),notes:v('mat-notes')};
   if(!m.desc||!m.client){alert('Client and description are required.');return;}
   if(!m.ref)m.ref='ME-'+new Date().getFullYear()+'-'+String(db.matters.length+1).padStart(3,'0');
   if(eid){const i=db.matters.findIndex(x=>x.id===eid);if(i>-1)db.matters[i]=m;}
@@ -750,14 +846,14 @@ function editMatter(id){
   document.getElementById('m-matter-title').textContent='Edit matter';
   openModal('m-matter',id);
   populateClientSelects();
-  setFields({id:'mat-id',ref:'mat-ref',client:'mat-client',desc:'mat-desc',type:'mat-type',status:'mat-status',opened:'mat-opened',rate:'mat-rate',notes:'mat-notes'},m);
+  setFields({id:'mat-id',ref:'mat-ref',client:'mat-client',desc:'mat-desc',type:'mat-type',status:'mat-status',opened:'mat-opened',rate:'mat-rate',folder:'mat-folder',notes:'mat-notes'},m);
 }
 function renderMatters(){
   const q=(v('s-matters')||'').toLowerCase();
   const rows=db.matters.filter(m=>(m.ref+m.desc+clientName(m.client)+m.type).toLowerCase().includes(q));
   const tb=document.getElementById('t-matters');
   if(!rows.length){tb.innerHTML=`<tr><td colspan="8" class="empty-msg">No matters yet.</td></tr>`;return;}
-  tb.innerHTML=rows.map(m=>`<tr><td><strong>${m.ref}</strong></td><td>${clientName(m.client)}</td><td>${m.desc}</td><td>${m.type}</td><td>${fmtMoney(m.rate)}</td><td>${badge(m.status)}</td><td>${fmtDate(m.opened)}</td><td style="white-space:nowrap"><button class="btn btn-sm" onclick="editMatter('${m.id}')">Edit</button> <button class="btn-danger" onclick="delRow('matters','${m.id}',renderMatters)">×</button></td></tr>`).join('');
+  tb.innerHTML=rows.map(m=>`<tr><td><strong>${m.ref}</strong></td><td>${clientName(m.client)}</td><td>${m.desc}</td><td>${m.type}</td><td>${fmtMoney(m.rate)}</td><td>${badge(m.status)}</td><td>${fmtDate(m.opened)}</td><td>${m.folder?`<a href="${m.folder}" target="_blank" class="btn btn-sm" title="Open folder">📁 Open</a>`:'—'}</td><td style="white-space:nowrap"><button class="btn btn-sm" onclick="editMatter('${m.id}')">Edit</button> <button class="btn-danger" onclick="delRow('matters','${m.id}',renderMatters)">×</button></td></tr>`).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -786,7 +882,7 @@ function renderAppts(){
 // ═══════════════════════════════════════════════
 function saveDoc(){
   const eid=v('doc-id');
-  const d={id:eid||uid(),name:v('doc-name'),client:v('doc-client'),matter:v('doc-matter'),type:v('doc-type'),date:v('doc-date')||today(),notes:v('doc-notes')};
+  const d={id:eid||uid(),name:v('doc-name'),client:v('doc-client'),matter:v('doc-matter'),type:v('doc-type'),format:v('doc-format'),date:v('doc-date')||today(),link:v('doc-link'),notes:v('doc-notes')};
   if(!d.name){alert('Document name is required.');return;}
   if(eid){const i=db.documents.findIndex(x=>x.id===eid);if(i>-1)db.documents[i]=d;}
   else db.documents.push(d);
@@ -794,10 +890,22 @@ function saveDoc(){
 }
 function renderDocs(){
   const q=(v('s-docs')||'').toLowerCase();
-  const rows=db.documents.filter(d=>(d.name+d.type+clientName(d.client)).toLowerCase().includes(q));
+  const typeF=v('s-docs-type')||'';
+  const rows=db.documents.filter(d=>(d.name+d.type+clientName(d.client)).toLowerCase().includes(q)&&(!typeF||d.type===typeF));
   const tb=document.getElementById('t-docs');
   if(!rows.length){tb.innerHTML=`<tr><td colspan="7" class="empty-msg">No document records yet.</td></tr>`;return;}
-  tb.innerHTML=rows.map(d=>`<tr><td><strong>${d.name}</strong></td><td>${clientName(d.client)}</td><td>${d.matter?matterRef(d.matter):'—'}</td><td>${d.type}</td><td>${fmtDate(d.date)}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.notes||'—'}</td><td><button class="btn-danger" onclick="delRow('documents','${d.id}',renderDocs)">×</button></td></tr>`).join('');
+  const fmtIcon={'Word (.docx)':'📝','PDF':'📄','Excel (.xlsx)':'📊','Email':'📧','Image':'🖼','Other':'📎'};
+  tb.innerHTML=rows.map(d=>`<tr>
+    <td><strong>${d.name}</strong></td>
+    <td>${clientName(d.client)}</td>
+    <td>${d.matter?matterRef(d.matter):'—'}</td>
+    <td>${d.type}</td>
+    <td>${d.format?(fmtIcon[d.format]||'📎')+' '+d.format:'—'}</td>
+    <td>${fmtDate(d.date)}</td>
+    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.notes||'—'}</td>
+    <td>${d.link?`<a href="${d.link}" target="_blank" class="btn btn-sm btn-primary">Open ↗</a>`:'<span style="color:var(--text3);font-size:12px">No link</span>'}</td>
+    <td style="white-space:nowrap"><button class="btn-danger" onclick="delRow('documents','${d.id}',renderDocs)">×</button></td>
+  </tr>`).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -934,6 +1042,156 @@ function renderDashboard(){
 // ═══════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════
+// ACTIVITY LOG
+// ═══════════════════════════════════════════════
+function calcActivityAmount(){
+  const hours=parseFloat(document.getElementById('act-hours').value)||0;
+  const rate=parseFloat(document.getElementById('act-rate').value)||0;
+  if(hours&&rate)document.getElementById('act-amount').value=(hours*rate).toFixed(2);
+  // pre-fill rate from matter
+  const mid=document.getElementById('act-matter').value;
+  if(mid&&!document.getElementById('act-rate').value){
+    const m=db.matters.find(x=>x.id===mid);
+    if(m&&m.rate)document.getElementById('act-rate').value=m.rate;
+  }
+}
+
+function saveActivity(){
+  const eid=v('act-id');
+  const a={
+    id:eid||uid(),
+    date:v('act-date'),
+    type:v('act-type'),
+    client:v('act-client'),
+    matter:v('act-matter'),
+    desc:v('act-desc'),
+    hours:parseFloat(v('act-hours'))||0,
+    rate:parseFloat(v('act-rate'))||0,
+    amount:parseFloat(v('act-amount'))||0,
+    billed:v('act-billed'),
+    notes:v('act-notes')
+  };
+  if(!a.date||!a.client||!a.desc){alert('Date, client and description are required.');return;}
+  if(eid){const i=db.activities.findIndex(x=>x.id===eid);if(i>-1)db.activities[i]=a;}
+  else db.activities.push(a);
+  db.activities.sort((a,b)=>b.date.localeCompare(a.date));
+  save();closeModal('m-activity');
+  clearForm(['act-hours','act-rate','act-amount','act-desc','act-notes']);
+  renderActivity();
+}
+
+function editActivity(id){
+  const a=db.activities.find(x=>x.id===id);if(!a)return;
+  openModal('m-activity',id);
+  populateClientSelects();
+  setFields({id:'act-id',date:'act-date',type:'act-type',client:'act-client',desc:'act-desc',notes:'act-notes',billed:'act-billed'},a);
+  document.getElementById('act-hours').value=a.hours||'';
+  document.getElementById('act-rate').value=a.rate||'';
+  document.getElementById('act-amount').value=a.amount||'';
+  if(a.client){filterMattersForClient('act-client','act-matter');setTimeout(()=>{document.getElementById('act-matter').value=a.matter||'';},50);}
+}
+
+function renderActivity(){
+  // Populate matter filter
+  const msel=document.getElementById('act-filter-matter');
+  const curMat=msel?msel.value:'';
+  if(msel){
+    msel.innerHTML='<option value="">All matters</option>';
+    db.matters.forEach(m=>msel.innerHTML+=`<option value="${m.id}">${m.ref} — ${clientName(m.client)}</option>`);
+    msel.value=curMat;
+  }
+
+  const filterMatter=curMat;
+  let acts=db.activities;
+  if(filterMatter)acts=acts.filter(a=>a.matter===filterMatter);
+
+  const title=document.getElementById('activity-card-title');
+  const actionsDiv=document.getElementById('activity-card-actions');
+  const entriesDiv=document.getElementById('activity-entries');
+
+  if(title){
+    if(filterMatter){
+      const m=db.matters.find(x=>x.id===filterMatter);
+      title.textContent=m?m.ref+' — '+clientName(m.client):'Matter activity';
+    } else {
+      title.textContent='All activity';
+    }
+  }
+
+  // Show "Create invoice from unbilled" button when matter selected
+  const unbilledForMatter=acts.filter(a=>a.billed==='unbilled'&&a.amount>0);
+  if(actionsDiv){
+    actionsDiv.innerHTML=unbilledForMatter.length&&filterMatter
+      ?`<span style="font-size:12px;color:var(--amber)">${unbilledForMatter.length} unbilled entry${unbilledForMatter.length>1?'s':''}</span>
+         <button class="btn btn-gold btn-sm" onclick="createInvoiceFromActivity('${filterMatter}')">Create invoice from unbilled</button>`
+      :'';
+  }
+
+  if(!entriesDiv)return;
+  if(!acts.length){entriesDiv.innerHTML='<div class="empty-msg">No activity yet. Click "+ Log activity" to record time, court appearances, phone calls and more.</div>';return;}
+
+  // Group by date
+  const byDate={};
+  acts.forEach(a=>{byDate[a.date]=byDate[a.date]||[];byDate[a.date].push(a);});
+  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+
+  entriesDiv.innerHTML=dates.map(date=>{
+    const dayEntries=byDate[date];
+    const dayTotal=dayEntries.reduce((s,a)=>s+(a.billed!=='no-charge'?a.amount:0),0);
+    return`<div style="background:var(--surface2);padding:8px 18px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;display:flex;justify-content:space-between">
+      <span>${fmtDate(date)}</span><span>${fmtMoney(dayTotal)}</span>
+    </div>`+dayEntries.map(a=>`
+    <div class="activity-item">
+      <div class="activity-dot dot-${a.type}" style="margin-top:5px"></div>
+      <div class="activity-body">
+        <strong>${a.desc}</strong>
+        <small>${a.type}${a.hours?' · '+a.hours+'h':''} · ${clientName(a.client)}${a.matter?' · '+matterRef(a.matter):''}${a.notes?' · '+a.notes:''}</small>
+        ${a.billed==='unbilled'&&a.amount>0?'<span class="activity-unbilled">Unbilled</span>':''}
+        ${a.billed==='no-charge'?'<span class="activity-unbilled" style="background:var(--gray-bg);color:var(--gray)">No charge</span>':''}
+        ${a.billed==='billed'?'<span class="activity-unbilled" style="background:var(--green-bg);color:var(--green)">Billed</span>':''}
+      </div>
+      <div class="activity-amount">
+        ${a.billed==='no-charge'?'<span style="color:var(--text3)">—</span>':fmtMoney(a.amount)}
+        <div style="display:flex;gap:4px;justify-content:flex-end;margin-top:4px">
+          <button class="btn btn-sm" onclick="editActivity('${a.id}')">Edit</button>
+          <button class="btn-danger" onclick="delRow('activities','${a.id}',renderActivity)">×</button>
+        </div>
+      </div>
+    </div>`).join('');
+  }).join('');
+}
+
+function createInvoiceFromActivity(matterId){
+  const m=db.matters.find(x=>x.id===matterId);if(!m)return;
+  const unbilled=db.activities.filter(a=>a.matter===matterId&&a.billed==='unbilled'&&a.amount>0);
+  if(!unbilled.length){alert('No unbilled activity entries for this matter.');return;}
+
+  const totalAmt=unbilled.reduce((s,a)=>s+a.amount,0);
+  const gst=totalAmt*0.1;
+  const lines=unbilled.map(a=>`${fmtDate(a.date)}: ${a.desc}${a.hours?' ('+a.hours+'h)':''} — ${fmtMoney(a.amount)}`).join('\n');
+
+  if(!confirm(`Create invoice for ${clientName(m.client)}?\n\nMatter: ${m.ref}\nEntries: ${unbilled.length}\nTotal (excl GST): ${fmtMoney(totalAmt)}\nGST: ${fmtMoney(gst)}\nTotal inc GST: ${fmtMoney(totalAmt+gst)}\n\nThis will mark the entries as billed.`))return;
+
+  const invNum='INV-'+String(db.invoices.length+1).padStart(3,'0');
+  const due=new Date();due.setDate(due.getDate()+30);
+  const inv={
+    id:uid(),num:invNum,client:m.client,matter:matterId,
+    date:today(),due:due.toISOString().slice(0,10),
+    amount:totalAmt,gst:parseFloat(gst.toFixed(2)),total:parseFloat((totalAmt+gst).toFixed(2)),
+    status:'Draft',desc:lines
+  };
+  db.invoices.push(inv);
+
+  // Mark entries as billed
+  unbilled.forEach(a=>{const act=db.activities.find(x=>x.id===a.id);if(act)act.billed='billed';});
+  save();
+  alert(`Invoice ${invNum} created successfully!\nGo to Invoices to review and send it.`);
+  renderActivity();
+  showPage('invoices');
+}
+
 function delRow(type,id,cb){
   if(!confirm('Delete this record? This cannot be undone.'))return;
   db[type]=db[type].filter(r=>r.id!==id);
