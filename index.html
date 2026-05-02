@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Murray Edwards Legal Services — Practice Manager</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1B2A4A;--gold:#B8972A;--white:#ffffff;
+  --bg:#f8f7f5;--surface:#ffffff;--surface2:#f2f1ef;
+  --text:#1a1a1a;--text2:#555;--text3:#888;
+  --border:#e0ddd8;--border2:#ccc;
+  --green:#2d7a3a;--green-bg:#eaf5ec;
+  --amber:#8a5a0a;--amber-bg:#fdf3e0;
+  --blue:#1a5fa8;--blue-bg:#e8f0fc;
+  --red:#a32d2d;--red-bg:#fdf0f0;
+  --gray-bg:#f1efea;--gray:#666;
+  --radius:8px;--radius-lg:12px;
+  --shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);min-height:100vh}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--navy);padding:20px}
+.login-card{background:var(--white);border-radius:var(--radius-lg);padding:40px;width:100%;max-width:380px;box-shadow:var(--shadow)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:0.05em}
+.login-logo p{font-size:13px;color:var(--gold);letter-spacing:0.12em;margin-top:4px}
+.login-logo .divider{width:48px;height:2px;background:var(--gold);margin:10px auto}
+.login-error{background:var(--red-bg);color:var(--red);padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:16px;display:none}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em}
+.form-group input{width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);transition:border 0.15s}
+.form-group input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,42,74,0.12)}
+.btn-login{width:100%;padding:12px;background:var(--navy);color:var(--white);border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.04em;margin-top:4px;transition:background 0.15s}
+.btn-login:hover{background:#243a63}
+.login-hint{text-align:center;font-size:11px;color:var(--text3);margin-top:16px}
+
+/* APP SHELL */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topnav{background:var(--navy);color:var(--white);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:50}
+.topnav-brand{display:flex;align-items:center;gap:10px}
+.topnav-brand span{font-size:15px;font-weight:600;letter-spacing:0.03em}
+.topnav-brand sub{font-size:11px;color:var(--gold);letter-spacing:0.08em}
+.topnav-right{display:flex;align-items:center;gap:12px}
+.topnav-right button{background:none;border:1px solid rgba(255,255,255,0.25);color:var(--white);border-radius:var(--radius);padding:5px 12px;cursor:pointer;font-size:12px}
+.topnav-right button:hover{background:rgba(255,255,255,0.1)}
+
+.app-body{display:flex;flex:1}
+.sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0;padding:16px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.nav-section-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:12px 18px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:13px;color:var(--text2);border-left:3px solid transparent;transition:all 0.12s;text-decoration:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:#eef1f7;color:var(--navy);border-left-color:var(--navy);font-weight:600}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.7}
+.nav-item.active svg{opacity:1}
+
+.main{flex:1;min-width:0}
+.page-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:40}
+.page-header h2{font-size:17px;font-weight:600;color:var(--navy)}
+.header-actions{display:flex;gap:8px}
+
+.content{padding:24px}
+.page{display:none}
+.page.active{display:block}
+
+/* BUTTONS */
+.btn{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--white);cursor:pointer;font-size:13px;color:var(--text);font-family:inherit;transition:all 0.12s}
+.btn:hover{background:var(--surface2)}
+.btn-primary{background:var(--navy);color:var(--white);border-color:var(--navy)}
+.btn-primary:hover{background:#243a63}
+.btn-gold{background:var(--gold);color:var(--white);border-color:var(--gold)}
+.btn-gold:hover{background:#a08225}
+.btn-danger{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px}
+.btn-danger:hover{background:var(--red-bg);border-radius:4px}
+.btn-sm{padding:4px 10px;font-size:12px}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px}
+.metric-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.metric-value{font-size:26px;font-weight:700;color:var(--navy)}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.metric-sub.warn{color:var(--red)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.card-header h3{font-size:14px;font-weight:600;color:var(--navy)}
+
+/* TABLES */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 16px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+td{padding:11px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafaf8}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-gray{background:var(--gray-bg);color:var(--gray)}
+.badge-navy{background:#e8ecf4;color:var(--navy)}
+
+/* ALERTS */
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:13px;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.alert-amber{background:var(--amber-bg);color:var(--amber);border:1px solid #f0d080}
+.alert-green{background:var(--green-bg);color:var(--green);border:1px solid #a0d8a8}
+
+/* FORMS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);z-index:1}
+.modal-header h3{font-size:15px;font-weight:600;color:var(--navy)}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.form-body{padding:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.full{grid-template-columns:1fr}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.fgroup{display:flex;flex-direction:column;gap:5px}
+.fgroup.span2{grid-column:1/-1}
+.fgroup label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em}
+.fgroup input,.fgroup select,.fgroup textarea{width:100%;padding:8px 12px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--white);font-family:inherit}
+.fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,42,74,0.1)}
+.fgroup input[readonly]{background:var(--surface2);color:var(--text2)}
+.fgroup textarea{resize:vertical;min-height:70px}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;padding:16px 20px;border-top:1px solid var(--border);background:var(--surface2)}
+
+/* SEARCH */
+.search-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.search-input{padding:8px 14px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;width:240px;background:var(--white)}
+.search-input:focus{outline:none;border-color:var(--navy)}
+
+/* DASHBOARD SPECIFIC */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.dash-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border)}
+.dash-row:last-child{border-bottom:none}
+.dash-row:hover{background:var(--surface2)}
+.dash-row-left strong{font-size:13px;display:block}
+.dash-row-left small{font-size:11px;color:var(--text3);margin-top:2px;display:block}
+.empty-msg{text-align:center;padding:32px 16px;color:var(--text3);font-size:13px}
+
+/* ACCOUNTS */
+.acct-row{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);font-size:13px}
+.acct-row:last-child{border-bottom:none}
+.acct-row:hover{background:var(--surface2)}
+.acct-total{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;font-size:14px;font-weight:700;border-top:2px solid var(--border);color:var(--navy)}
+.profit-box{background:var(--navy);color:var(--white);border-radius:var(--radius-lg);padding:20px;margin-top:18px}
+.profit-box h3{font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px}
+.profit-box .amount{font-size:32px;font-weight:700}
+.profit-box .sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px}
+
+/* SETTINGS */
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:18px}
+.settings-card h3{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .sidebar{display:none}
+  .dash-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+  .search-input{width:160px}
+}
+
+/* PRINT */
+@media print{.sidebar,.topnav,.header-actions,.btn,.modal-overlay{display:none!important}.main{margin:0}}
+
+/* GOLD ACCENT TOP BORDER ON CARDS */
+.card.accent{border-top:3px solid var(--gold)}
+
+/* CHANGE PASSWORD */
+#change-pw-msg{font-size:12px;margin-top:8px;min-height:18px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <h1>MURRAY EDWARDS</h1>
+      <div class="divider"></div>
+      <p>L E G A L &nbsp; S E R V I C E S</p>
+    </div>
+    <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pw" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign in</button>
+    <p class="login-hint">Default password: <strong>MurrayLegal1</strong><br>Change it in Settings after first login.</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="topnav-brand">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="4" fill="#B8972A"/><path d="M5 17V8l6-4 6 4v9" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><rect x="8.5" y="12" width="5" height="5" rx="0.5" fill="white"/></svg>
+      <div><span>Murray Edwards Legal Services</span></div>
+    </div>
+    <div class="topnav-right">
+      <span id="nav-date" style="font-size:12px;color:rgba(255,255,255,0.6)"></span>
+      <button onclick="showPage('settings')">⚙ Settings</button>
+      <button onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="app-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="nav-section-label">Practice</div>
+      <a class="nav-item active" onclick="showPage('dashboard')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" onclick="showPage('clients')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        Clients
+      </a>
+      <a class="nav-item" onclick="showPage('matters')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M5 6h6M5 9h4"/></svg>
+        Matters
+      </a>
+      <a class="nav-item" onclick="showPage('appointments')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="12" rx="1"/><path d="M1 7h14M5 1v4M11 1v4"/></svg>
+        Appointments
+      </a>
+      <a class="nav-item" onclick="showPage('documents')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5L9 1z"/><path d="M9 1v4h4"/></svg>
+        Documents
+      </a>
+      <div class="nav-section-label">Accounts</div>
+      <a class="nav-item" onclick="showPage('invoices')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="12" rx="1"/><path d="M5 6h6M5 9h4M5 12h2"/></svg>
+        Invoices
+      </a>
+      <a class="nav-item" onclick="showPage('expenses')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M6 7h3.5a1.5 1.5 0 010 3H6"/></svg>
+        Expenses
+      </a>
+      <a class="nav-item" onclick="showPage('accounts')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12v8H2z"/><path d="M2 7h12"/><path d="M5 10h2"/></svg>
+        Accounts
+      </a>
+      <div class="nav-section-label">System</div>
+      <a class="nav-item" onclick="showPage('settings')" href="#">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+        Settings
+      </a>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <h2 id="page-title">Dashboard</h2>
+        <div class="header-actions" id="header-actions"></div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="page active content" id="page-dashboard">
+        <div id="dash-alerts"></div>
+        <div class="metrics-grid" id="dash-metrics"></div>
+        <div class="dash-grid">
+          <div class="card accent">
+            <div class="card-header"><h3>Upcoming appointments</h3></div>
+            <div id="dash-appts"></div>
+          </div>
+          <div class="card accent">
+            <div class="card-header"><h3>Recent invoices</h3></div>
+            <div id="dash-invs"></div>
+          </div>
+        </div>
+        <div class="card accent">
+          <div class="card-header"><h3>Open matters</h3></div>
+          <div id="dash-matters-list"></div>
+        </div>
+      </div>
+
+      <!-- CLIENTS -->
+      <div class="page content" id="page-clients">
+        <div class="search-row">
+          <input class="search-input" placeholder="Search clients..." id="s-clients" oninput="renderClients()">
+          <button class="btn btn-primary" onclick="openModal('m-client')">+ New client</button>
+        </div>
+        <div class="card"><div class="table-wrap"><table>
+          <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Matters</th><th>Status</th><th></th></tr></thead>
+          <tbody id="t-clients"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- MATTERS -->
+      <div class="page content" id="page-matters">
+        <div class="search-row">
+          <input class="search-input" placeholder="Search matters..." id="s-matters" oninput="renderMatters()">
+          <button class="btn btn-primary" onclick="openModal('m-matter')">+ New matter</button>
+        </div>
+        <div class="card"><div class="table-wrap"><table>
+          <thead><tr><th>File ref</th><th>Client</th><th>Description</th><th>Type</th><th>Rate/hr</th><th>Status</th><th>Opened</th><th></th></tr></thead>
+          <tbody id="t-matters"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- APPOINTMENTS -->
+      <div class="page content" id="page-appointments">
+        <div class="search-row">
+          <input class="search-input" placeholder="Search appointments..." id="s-appts" oninput="renderAppts()">
+          <button class="btn btn-primary" onclick="openModal('m-appt')">+ New appointment</button>
+        </div>
+        <div class="card"><div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>Time</th><th>Client</th><th>Matter</th><th>Type</th><th>Duration</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="t-appts"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="page content" id="page-documents">
+        <div class="search-row">
+          <input class="search-input" placeholder="Search documents..." id="s-docs" oninput="renderDocs()">
+          <button class="btn btn-primary" onclick="openModal('m-doc')">+ New record</button>
+        </div>
+        <div class="card"><div class="table-wrap"><table>
+          <thead><tr><th>Document name</th><th>Client</th><th>Matter</th><th>Type</th><th>Date</th><th>Notes / location</th><th></th></tr></thead>
+          <tbody id="t-docs"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- INVOICES -->
+      <div class="page content" id="page-invoices">
+        <div class="search-row">
+          <input class="search-input" placeholder="Search invoices..." id="s-invoices" oninput="renderInvoices()">
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="openModal('m-invoice')">+ New invoice</button>
+          </div>
+        </div>
+        <div class="card"><div class="table-wrap"><table>
+          <thead><tr><th>Invoice #</th><th>Client</th><th>Matter</th><th>Date</th><th>Due date</th><th>Amount</th><th>GST</th><th>Total</th><th>Status</th><th></th></tr></thead>
+          <tbody id="t-invoices"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- EXPENSES -->
+      <div class="page content" id="page-expenses">
+        <div class="search-row">
+          <input class="search-input" placeholder="Search expenses..." id="s-expenses" oninput="renderExpenses()">
+          <button class="btn btn-primary" onclick="openModal('m-expense')">+ New expense</button>
+        </div>
+        <div class="card"><div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>GST</th><th>Total</th><th>Receipt</th><th></th></tr></thead>
+          <tbody id="t-expenses"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ACCOUNTS -->
+      <div class="page content" id="page-accounts">
+        <div class="metrics-grid" id="acc-metrics" style="grid-template-columns:repeat(3,1fr)"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+          <div>
+            <div class="card accent">
+              <div class="card-header"><h3>Income by status</h3></div>
+              <div id="acc-income"></div>
+              <div id="acc-income-total"></div>
+            </div>
+            <div class="card accent">
+              <div class="card-header"><h3>GST summary</h3></div>
+              <div id="acc-gst"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card accent">
+              <div class="card-header"><h3>Expenses by category</h3></div>
+              <div id="acc-exp"></div>
+              <div id="acc-exp-total"></div>
+            </div>
+            <div class="profit-box" id="acc-profit"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page content" id="page-settings">
+        <div class="settings-card">
+          <h3>Firm details</h3>
+          <div class="form-row">
+            <div class="fgroup"><label>Firm name</label><input id="set-firm" value="Murray Edwards Legal Services"></div>
+            <div class="fgroup"><label>Solicitor name</label><input id="set-name" value="Murray Edwards"></div>
+            <div class="fgroup"><label>Phone</label><input id="set-phone" value="0411 590 065"></div>
+            <div class="fgroup"><label>Email</label><input id="set-email" value="murrayels@gmail.com"></div>
+            <div class="fgroup span2"><label>Address</label><input id="set-address" value="Central Coast, NSW"></div>
+            <div class="fgroup"><label>ABN</label><input id="set-abn" value="22 318 545 945"></div>
+            <div class="fgroup"><label>Default hourly rate ($)</label><input id="set-rate" type="number" value="350"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button class="btn btn-primary" onclick="saveSettings()">Save details</button>
+            <span id="set-saved" style="font-size:12px;color:var(--green);align-self:center"></span>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3>Change password</h3>
+          <div class="form-row">
+            <div class="fgroup"><label>Current password</label><input type="password" id="pw-current" placeholder="Current password"></div>
+            <div class="fgroup"><label>New password</label><input type="password" id="pw-new" placeholder="New password (min 8 chars)"></div>
+            <div class="fgroup"><label>Confirm new password</label><input type="password" id="pw-confirm" placeholder="Confirm new password"></div>
+          </div>
+          <button class="btn btn-primary" onclick="changePassword()">Update password</button>
+          <div id="change-pw-msg"></div>
+        </div>
+
+        <div class="settings-card">
+          <h3>Data management</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" onclick="exportData()">⬇ Export all data (JSON)</button>
+            <button class="btn" onclick="document.getElementById('import-file').click()">⬆ Import data (JSON)</button>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+            <button class="btn" style="color:var(--red);border-color:var(--red)" onclick="clearAllData()">✕ Clear all data</button>
+          </div>
+          <p style="font-size:12px;color:var(--text3);margin-top:12px">Export your data regularly as a backup. Import restores from a previously exported JSON file.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- CLIENT -->
+<div class="modal-overlay" id="m-client">
+  <div class="modal">
+    <div class="modal-header"><h3 id="m-client-title">New client</h3><button class="modal-close" onclick="closeModal('m-client')">×</button></div>
+    <input type="hidden" id="c-id">
+    <div class="form-body">
+      <div class="form-row"><div class="fgroup"><label>First name *</label><input id="c-fname" placeholder="John"></div><div class="fgroup"><label>Last name *</label><input id="c-lname" placeholder="Smith"></div></div>
+      <div class="form-row"><div class="fgroup"><label>Phone</label><input id="c-phone" placeholder="04xx xxx xxx"></div><div class="fgroup"><label>Email</label><input id="c-email" placeholder="email@example.com" type="email"></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Address</label><input id="c-address" placeholder="Street, suburb, postcode"></div></div>
+      <div class="form-row"><div class="fgroup"><label>Date of birth</label><input id="c-dob" type="date"></div><div class="fgroup"><label>Status</label><select id="c-status"><option>Active</option><option>Inactive</option></select></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Notes</label><textarea id="c-notes" placeholder="Any additional notes..."></textarea></div></div>
+    </div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('m-client')">Cancel</button><button class="btn btn-primary" onclick="saveClient()">Save client</button></div>
+  </div>
+</div>
+
+<!-- MATTER -->
+<div class="modal-overlay" id="m-matter">
+  <div class="modal">
+    <div class="modal-header"><h3 id="m-matter-title">New matter</h3><button class="modal-close" onclick="closeModal('m-matter')">×</button></div>
+    <input type="hidden" id="mat-id">
+    <div class="form-body">
+      <div class="form-row"><div class="fgroup"><label>File reference</label><input id="mat-ref" placeholder="ME-2024-001"></div><div class="fgroup"><label>Client *</label><select id="mat-client"></select></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Description *</label><input id="mat-desc" placeholder="Brief description of matter"></div></div>
+      <div class="form-row"><div class="fgroup"><label>Matter type</label><select id="mat-type"><option>Conveyancing</option><option>Family Law</option><option>Wills & Estates</option><option>Commercial</option><option>Litigation</option><option>Criminal</option><option>Employment</option><option>Property</option><option>Other</option></select></div><div class="fgroup"><label>Status</label><select id="mat-status"><option>Open</option><option>In progress</option><option>Pending</option><option>Closed</option></select></div></div>
+      <div class="form-row"><div class="fgroup"><label>Date opened</label><input id="mat-opened" type="date"></div><div class="fgroup"><label>Hourly rate ($)</label><input id="mat-rate" type="number" placeholder="350"></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Notes</label><textarea id="mat-notes" placeholder="Matter notes..."></textarea></div></div>
+    </div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('m-matter')">Cancel</button><button class="btn btn-primary" onclick="saveMatter()">Save matter</button></div>
+  </div>
+</div>
+
+<!-- APPOINTMENT -->
+<div class="modal-overlay" id="m-appt">
+  <div class="modal">
+    <div class="modal-header"><h3>New appointment</h3><button class="modal-close" onclick="closeModal('m-appt')">×</button></div>
+    <input type="hidden" id="appt-id">
+    <div class="form-body">
+      <div class="form-row"><div class="fgroup"><label>Date *</label><input id="appt-date" type="date"></div><div class="fgroup"><label>Time</label><input id="appt-time" type="time"></div></div>
+      <div class="form-row"><div class="fgroup"><label>Client *</label><select id="appt-client" onchange="filterMattersForClient('appt-client','appt-matter')"></select></div><div class="fgroup"><label>Matter</label><select id="appt-matter"><option value="">— Select matter —</option></select></div></div>
+      <div class="form-row"><div class="fgroup"><label>Appointment type</label><select id="appt-type"><option>Consultation</option><option>Review</option><option>Court appearance</option><option>Settlement</option><option>Phone call</option><option>Signing</option><option>Other</option></select></div><div class="fgroup"><label>Duration (mins)</label><input id="appt-dur" type="number" placeholder="60"></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Notes</label><textarea id="appt-notes" placeholder="Appointment notes..."></textarea></div></div>
+    </div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('m-appt')">Cancel</button><button class="btn btn-primary" onclick="saveAppt()">Save appointment</button></div>
+  </div>
+</div>
+
+<!-- DOCUMENT -->
+<div class="modal-overlay" id="m-doc">
+  <div class="modal">
+    <div class="modal-header"><h3>New document record</h3><button class="modal-close" onclick="closeModal('m-doc')">×</button></div>
+    <input type="hidden" id="doc-id">
+    <div class="form-body">
+      <div class="form-row full"><div class="fgroup span2"><label>Document name *</label><input id="doc-name" placeholder="e.g. Contract of Sale — Smith"></div></div>
+      <div class="form-row"><div class="fgroup"><label>Client</label><select id="doc-client" onchange="filterMattersForClient('doc-client','doc-matter')"></select></div><div class="fgroup"><label>Matter</label><select id="doc-matter"><option value="">— Select matter —</option></select></div></div>
+      <div class="form-row"><div class="fgroup"><label>Document type</label><select id="doc-type"><option>Contract</option><option>Will</option><option>Affidavit</option><option>Correspondence</option><option>Court document</option><option>Invoice</option><option>Agreement</option><option>Deed</option><option>Other</option></select></div><div class="fgroup"><label>Date</label><input id="doc-date" type="date"></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Notes / file location</label><textarea id="doc-notes" placeholder="Where the document is filed, or any notes..."></textarea></div></div>
+    </div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('m-doc')">Cancel</button><button class="btn btn-primary" onclick="saveDoc()">Save record</button></div>
+  </div>
+</div>
+
+<!-- INVOICE -->
+<div class="modal-overlay" id="m-invoice">
+  <div class="modal">
+    <div class="modal-header"><h3>New invoice</h3><button class="modal-close" onclick="closeModal('m-invoice')">×</button></div>
+    <input type="hidden" id="inv-id">
+    <div class="form-body">
+      <div class="form-row"><div class="fgroup"><label>Invoice number</label><input id="inv-num" placeholder="INV-001"></div><div class="fgroup"><label>Client *</label><select id="inv-client" onchange="filterMattersForClient('inv-client','inv-matter')"></select></div></div>
+      <div class="form-row"><div class="fgroup"><label>Matter</label><select id="inv-matter"><option value="">— Select matter —</option></select></div><div class="fgroup"><label>Status</label><select id="inv-status"><option>Draft</option><option>Sent</option><option>Paid</option><option>Overdue</option></select></div></div>
+      <div class="form-row"><div class="fgroup"><label>Invoice date</label><input id="inv-date" type="date"></div><div class="fgroup"><label>Due date</label><input id="inv-due" type="date"></div></div>
+      <div class="form-row three">
+        <div class="fgroup"><label>Amount excl. GST ($) *</label><input id="inv-amount" type="number" step="0.01" placeholder="0.00" oninput="calcInvGST()"></div>
+        <div class="fgroup"><label>GST ($)</label><input id="inv-gst" readonly placeholder="0.00"></div>
+        <div class="fgroup"><label>Total ($)</label><input id="inv-total" readonly placeholder="0.00"></div>
+      </div>
+      <div class="form-row full"><div class="fgroup span2"><label>Description of services</label><textarea id="inv-desc" placeholder="Legal services rendered..."></textarea></div></div>
+    </div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('m-invoice')">Cancel</button><button class="btn btn-primary" onclick="saveInvoice()">Save invoice</button></div>
+  </div>
+</div>
+
+<!-- EXPENSE -->
+<div class="modal-overlay" id="m-expense">
+  <div class="modal">
+    <div class="modal-header"><h3>New expense</h3><button class="modal-close" onclick="closeModal('m-expense')">×</button></div>
+    <input type="hidden" id="exp-id">
+    <div class="form-body">
+      <div class="form-row"><div class="fgroup"><label>Date</label><input id="exp-date" type="date"></div><div class="fgroup"><label>Category</label><select id="exp-cat"><option>Office supplies</option><option>Professional fees</option><option>Travel</option><option>Phone & internet</option><option>Software / subscriptions</option><option>Court fees</option><option>Advertising</option><option>Insurance</option><option>Other</option></select></div></div>
+      <div class="form-row full"><div class="fgroup span2"><label>Description *</label><input id="exp-desc" placeholder="Description of expense"></div></div>
+      <div class="form-row three">
+        <div class="fgroup"><label>Amount excl. GST ($) *</label><input id="exp-amount" type="number" step="0.01" placeholder="0.00" oninput="calcExpGST()"></div>
+        <div class="fgroup"><label>GST ($)</label><input id="exp-gst" readonly placeholder="0.00"></div>
+        <div class="fgroup"><label>Total ($)</label><input id="exp-total" readonly placeholder="0.00"></div>
+      </div>
+      <div class="form-row full"><div class="fgroup span2"><label>Receipt / reference number</label><input id="exp-receipt" placeholder="Receipt number or reference"></div></div>
+    </div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('m-expense')">Cancel</button><button class="btn btn-primary" onclick="saveExpense()">Save expense</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════
+const DEFAULT_PW = 'MurrayLegal1';
+function getStoredPW(){return localStorage.getItem('mel_pw')||DEFAULT_PW;}
+function doLogin(){
+  const pw=document.getElementById('login-pw').value;
+  if(pw===getStoredPW()){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('app').style.flexDirection='column';
+    document.getElementById('login-pw').value='';
+    document.getElementById('login-error').style.display='none';
+    renderDashboard();
+    document.getElementById('nav-date').textContent=new Date().toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  } else {
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-pw').value='';
+  }
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+function changePassword(){
+  const cur=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const cf=document.getElementById('pw-confirm').value;
+  const msg=document.getElementById('change-pw-msg');
+  if(cur!==getStoredPW()){msg.style.color='var(--red)';msg.textContent='Current password is incorrect.';return;}
+  if(nw.length<8){msg.style.color='var(--red)';msg.textContent='New password must be at least 8 characters.';return;}
+  if(nw!==cf){msg.style.color='var(--red)';msg.textContent='New passwords do not match.';return;}
+  localStorage.setItem('mel_pw',nw);
+  msg.style.color='var(--green)';msg.textContent='Password updated successfully.';
+  document.getElementById('pw-current').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+}
+
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+let db={clients:[],matters:[],appointments:[],documents:[],invoices:[],expenses:[]};
+let settings={firm:'Murray Edwards Legal Services',name:'Murray Edwards',phone:'0411 590 065',email:'murrayels@gmail.com',address:'Central Coast, NSW',abn:'22 318 545 945',rate:350};
+try{const s=localStorage.getItem('mel_db');if(s)db=JSON.parse(s);}catch(e){}
+try{const s=localStorage.getItem('mel_settings');if(s)settings=Object.assign(settings,JSON.parse(s));}catch(e){}
+
+function save(){try{localStorage.setItem('mel_db',JSON.stringify(db));}catch(e){alert('Storage error: '+e.message);}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmtDate(d){if(!d)return'—';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function fmtMoney(n){return'$'+(parseFloat(n)||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function clientName(id){const c=db.clients.find(x=>x.id===id);return c?c.fname+' '+c.lname:'—';}
+function matterRef(id){const m=db.matters.find(x=>x.id===id);return m?m.ref:'—';}
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+
+function badge(s){
+  const map={Active:'badge-green',Open:'badge-blue','In progress':'badge-amber',Paid:'badge-green',Sent:'badge-navy',Draft:'badge-gray',Overdue:'badge-red',Closed:'badge-gray',Inactive:'badge-gray',Pending:'badge-amber'};
+  return`<span class="badge ${map[s]||'badge-gray'}">${s}</span>`;
+}
+
+function saveSettings(){
+  settings={firm:v('set-firm'),name:v('set-name'),phone:v('set-phone'),email:v('set-email'),address:v('set-address'),abn:v('set-abn'),rate:parseFloat(v('set-rate'))||350};
+  localStorage.setItem('mel_settings',JSON.stringify(settings));
+  const msg=document.getElementById('set-saved');msg.textContent='Saved!';setTimeout(()=>msg.textContent='',2000);
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({db,settings},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='murray_edwards_legal_backup_'+today()+'.json';a.click();
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.db)db=d.db;
+      if(d.settings)settings=Object.assign(settings,d.settings);
+      save();localStorage.setItem('mel_settings',JSON.stringify(settings));
+      alert('Data imported successfully!');renderDashboard();
+    }catch(err){alert('Invalid backup file.');}
+  };
+  r.readAsText(f);e.target.value='';
+}
+function clearAllData(){
+  if(confirm('This will permanently delete ALL your data. Are you sure?')){
+    if(confirm('Are you absolutely sure? This cannot be undone.')){
+      db={clients:[],matters:[],appointments:[],documents:[],invoices:[],expenses:[]};
+      save();renderDashboard();alert('All data cleared.');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+const pageTitles={dashboard:'Dashboard',clients:'Clients',matters:'Matters',appointments:'Appointments',documents:'Documents',invoices:'Invoices',expenses:'Expenses',accounts:'Accounts summary',settings:'Settings'};
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))n.classList.add('active');});
+  document.getElementById('page-title').textContent=pageTitles[name]||name;
+  const renders={dashboard:renderDashboard,clients:renderClients,matters:renderMatters,appointments:renderAppts,documents:renderDocs,invoices:renderInvoices,expenses:renderExpenses,accounts:renderAccounts};
+  if(renders[name])renders[name]();
+  if(name==='settings'){
+    document.getElementById('set-firm').value=settings.firm;
+    document.getElementById('set-name').value=settings.name;
+    document.getElementById('set-phone').value=settings.phone;
+    document.getElementById('set-email').value=settings.email;
+    document.getElementById('set-address').value=settings.address;
+    document.getElementById('set-abn').value=settings.abn;
+    document.getElementById('set-rate').value=settings.rate;
+  }
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════
+function openModal(id,editId){
+  document.getElementById(id).classList.add('open');
+  populateClientSelects();
+  if(id==='m-invoice'&&!editId){
+    const n='INV-'+String(db.invoices.length+1).padStart(3,'0');
+    document.getElementById('inv-num').value=n;
+    document.getElementById('inv-date').value=today();
+    const d=new Date();d.setDate(d.getDate()+30);
+    document.getElementById('inv-due').value=d.toISOString().slice(0,10);
+  }
+  if(id==='m-appt'&&!editId)document.getElementById('appt-date').value=today();
+  if(id==='m-doc'&&!editId)document.getElementById('doc-date').value=today();
+  if(id==='m-expense'&&!editId)document.getElementById('exp-date').value=today();
+  if(id==='m-matter'&&!editId){
+    document.getElementById('mat-opened').value=today();
+    document.getElementById('mat-rate').value=settings.rate||350;
+    const r=String(db.matters.length+1).padStart(3,'0');
+    document.getElementById('mat-ref').value='ME-'+new Date().getFullYear()+'-'+r;
+  }
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  // clear hidden id fields
+  ['c-id','mat-id','appt-id','doc-id','inv-id','exp-id'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+function populateClientSelects(){
+  ['mat-client','appt-client','inv-client','doc-client'].forEach(sid=>{
+    const el=document.getElementById(sid);if(!el)return;
+    const val=el.value;
+    el.innerHTML='<option value="">— Select client —</option>';
+    db.clients.forEach(c=>el.innerHTML+=`<option value="${c.id}">${c.fname} ${c.lname}</option>`);
+    el.value=val;
+  });
+}
+
+function filterMattersForClient(clientSelectId,matterSelectId){
+  const cid=document.getElementById(clientSelectId).value;
+  const ms=document.getElementById(matterSelectId);
+  ms.innerHTML='<option value="">— Select matter —</option>';
+  db.matters.filter(m=>m.client===cid).forEach(m=>ms.innerHTML+=`<option value="${m.id}">${m.ref} — ${m.desc}</option>`);
+}
+
+// ═══════════════════════════════════════════════
+// CLIENTS
+// ═══════════════════════════════════════════════
+function saveClient(){
+  const eid=v('c-id');
+  const c={id:eid||uid(),fname:v('c-fname'),lname:v('c-lname'),phone:v('c-phone'),email:v('c-email'),address:v('c-address'),dob:v('c-dob'),status:v('c-status'),notes:v('c-notes')};
+  if(!c.fname||!c.lname){alert('First and last name are required.');return;}
+  if(eid){const i=db.clients.findIndex(x=>x.id===eid);if(i>-1)db.clients[i]=c;}
+  else db.clients.push(c);
+  save();closeModal('m-client');clearForm(['c-fname','c-lname','c-phone','c-email','c-address','c-dob','c-notes']);renderClients();
+}
+function editClient(id){
+  const c=db.clients.find(x=>x.id===id);if(!c)return;
+  document.getElementById('m-client-title').textContent='Edit client';
+  openModal('m-client',id);
+  setFields({id:'c-id',fname:'c-fname',lname:'c-lname',phone:'c-phone',email:'c-email',address:'c-address',dob:'c-dob',status:'c-status',notes:'c-notes'},c);
+}
+function renderClients(){
+  const q=(v('s-clients')||'').toLowerCase();
+  const rows=db.clients.filter(c=>(c.fname+' '+c.lname+c.email+c.phone).toLowerCase().includes(q));
+  const tb=document.getElementById('t-clients');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="7" class="empty-msg">No clients yet. Click "+ New client" to add one.</td></tr>`;return;}
+  tb.innerHTML=rows.map(c=>{
+    const mc=db.matters.filter(m=>m.client===c.id).length;
+    return`<tr><td><strong>${c.fname} ${c.lname}</strong></td><td>${c.phone||'—'}</td><td>${c.email||'—'}</td><td>${c.address||'—'}</td><td>${mc}</td><td>${badge(c.status)}</td><td style="white-space:nowrap"><button class="btn btn-sm" onclick="editClient('${c.id}')">Edit</button> <button class="btn-danger" onclick="delRow('clients','${c.id}',renderClients)">×</button></td></tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// MATTERS
+// ═══════════════════════════════════════════════
+function saveMatter(){
+  const eid=v('mat-id');
+  const m={id:eid||uid(),ref:v('mat-ref'),client:v('mat-client'),desc:v('mat-desc'),type:v('mat-type'),status:v('mat-status'),opened:v('mat-opened')||today(),rate:parseFloat(v('mat-rate'))||settings.rate,notes:v('mat-notes')};
+  if(!m.desc||!m.client){alert('Client and description are required.');return;}
+  if(!m.ref)m.ref='ME-'+new Date().getFullYear()+'-'+String(db.matters.length+1).padStart(3,'0');
+  if(eid){const i=db.matters.findIndex(x=>x.id===eid);if(i>-1)db.matters[i]=m;}
+  else db.matters.push(m);
+  save();closeModal('m-matter');renderMatters();
+}
+function editMatter(id){
+  const m=db.matters.find(x=>x.id===id);if(!m)return;
+  document.getElementById('m-matter-title').textContent='Edit matter';
+  openModal('m-matter',id);
+  populateClientSelects();
+  setFields({id:'mat-id',ref:'mat-ref',client:'mat-client',desc:'mat-desc',type:'mat-type',status:'mat-status',opened:'mat-opened',rate:'mat-rate',notes:'mat-notes'},m);
+}
+function renderMatters(){
+  const q=(v('s-matters')||'').toLowerCase();
+  const rows=db.matters.filter(m=>(m.ref+m.desc+clientName(m.client)+m.type).toLowerCase().includes(q));
+  const tb=document.getElementById('t-matters');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="8" class="empty-msg">No matters yet.</td></tr>`;return;}
+  tb.innerHTML=rows.map(m=>`<tr><td><strong>${m.ref}</strong></td><td>${clientName(m.client)}</td><td>${m.desc}</td><td>${m.type}</td><td>${fmtMoney(m.rate)}</td><td>${badge(m.status)}</td><td>${fmtDate(m.opened)}</td><td style="white-space:nowrap"><button class="btn btn-sm" onclick="editMatter('${m.id}')">Edit</button> <button class="btn-danger" onclick="delRow('matters','${m.id}',renderMatters)">×</button></td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// APPOINTMENTS
+// ═══════════════════════════════════════════════
+function saveAppt(){
+  const eid=v('appt-id');
+  const a={id:eid||uid(),date:v('appt-date'),time:v('appt-time'),client:v('appt-client'),matter:v('appt-matter'),type:v('appt-type'),duration:v('appt-dur'),notes:v('appt-notes')};
+  if(!a.date||!a.client){alert('Date and client are required.');return;}
+  if(eid){const i=db.appointments.findIndex(x=>x.id===eid);if(i>-1)db.appointments[i]=a;}
+  else db.appointments.push(a);
+  db.appointments.sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''));
+  save();closeModal('m-appt');renderAppts();
+}
+function renderAppts(){
+  const q=(v('s-appts')||'').toLowerCase();
+  const t=today();
+  const rows=db.appointments.filter(a=>(clientName(a.client)+a.type+a.date).toLowerCase().includes(q));
+  const tb=document.getElementById('t-appts');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="8" class="empty-msg">No appointments yet.</td></tr>`;return;}
+  tb.innerHTML=rows.map(a=>`<tr><td>${fmtDate(a.date)}${a.date<t?' <span class="badge badge-gray" style="font-size:10px">past</span>':''}</td><td>${a.time||'—'}</td><td>${clientName(a.client)}</td><td>${a.matter?matterRef(a.matter):'—'}</td><td>${a.type}</td><td>${a.duration?a.duration+' min':'—'}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.notes||'—'}</td><td style="white-space:nowrap"><button class="btn-danger" onclick="delRow('appointments','${a.id}',renderAppts)">×</button></td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// DOCUMENTS
+// ═══════════════════════════════════════════════
+function saveDoc(){
+  const eid=v('doc-id');
+  const d={id:eid||uid(),name:v('doc-name'),client:v('doc-client'),matter:v('doc-matter'),type:v('doc-type'),date:v('doc-date')||today(),notes:v('doc-notes')};
+  if(!d.name){alert('Document name is required.');return;}
+  if(eid){const i=db.documents.findIndex(x=>x.id===eid);if(i>-1)db.documents[i]=d;}
+  else db.documents.push(d);
+  save();closeModal('m-doc');renderDocs();
+}
+function renderDocs(){
+  const q=(v('s-docs')||'').toLowerCase();
+  const rows=db.documents.filter(d=>(d.name+d.type+clientName(d.client)).toLowerCase().includes(q));
+  const tb=document.getElementById('t-docs');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="7" class="empty-msg">No document records yet.</td></tr>`;return;}
+  tb.innerHTML=rows.map(d=>`<tr><td><strong>${d.name}</strong></td><td>${clientName(d.client)}</td><td>${d.matter?matterRef(d.matter):'—'}</td><td>${d.type}</td><td>${fmtDate(d.date)}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.notes||'—'}</td><td><button class="btn-danger" onclick="delRow('documents','${d.id}',renderDocs)">×</button></td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// INVOICES
+// ═══════════════════════════════════════════════
+function calcInvGST(){
+  const a=parseFloat(document.getElementById('inv-amount').value||0);
+  document.getElementById('inv-gst').value=(a*0.1).toFixed(2);
+  document.getElementById('inv-total').value=(a*1.1).toFixed(2);
+}
+function saveInvoice(){
+  const eid=v('inv-id');
+  const inv={id:eid||uid(),num:v('inv-num'),client:v('inv-client'),matter:v('inv-matter'),date:v('inv-date'),due:v('inv-due'),amount:parseFloat(v('inv-amount'))||0,gst:parseFloat(v('inv-gst'))||0,total:parseFloat(v('inv-total'))||0,status:v('inv-status'),desc:v('inv-desc')};
+  if(!inv.client||!inv.amount){alert('Client and amount are required.');return;}
+  if(eid){const i=db.invoices.findIndex(x=>x.id===eid);if(i>-1)db.invoices[i]=inv;}
+  else db.invoices.push(inv);
+  save();closeModal('m-invoice');renderInvoices();
+}
+function editInvoice(id){
+  const inv=db.invoices.find(x=>x.id===id);if(!inv)return;
+  openModal('m-invoice',id);
+  populateClientSelects();
+  setFields({id:'inv-id',num:'inv-num',client:'inv-client',matter:'inv-matter',date:'inv-date',due:'inv-due',status:'inv-status',desc:'inv-desc'},inv);
+  document.getElementById('inv-amount').value=inv.amount;
+  document.getElementById('inv-gst').value=inv.gst;
+  document.getElementById('inv-total').value=inv.total;
+  if(inv.client)filterMattersForClient('inv-client','inv-matter');
+  document.getElementById('inv-matter').value=inv.matter||'';
+}
+function markPaid(id){
+  const inv=db.invoices.find(x=>x.id===id);if(inv){inv.status='Paid';save();renderInvoices();renderDashboard();}
+}
+function renderInvoices(){
+  const q=(v('s-invoices')||'').toLowerCase();
+  const rows=db.invoices.filter(i=>(i.num+clientName(i.client)+i.status).toLowerCase().includes(q));
+  const tb=document.getElementById('t-invoices');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="10" class="empty-msg">No invoices yet.</td></tr>`;return;}
+  tb.innerHTML=rows.map(i=>`<tr><td><strong>${i.num}</strong></td><td>${clientName(i.client)}</td><td>${i.matter?matterRef(i.matter):'—'}</td><td>${fmtDate(i.date)}</td><td>${fmtDate(i.due)}</td><td>${fmtMoney(i.amount)}</td><td>${fmtMoney(i.gst)}</td><td><strong>${fmtMoney(i.total)}</strong></td><td>${badge(i.status)}</td><td style="white-space:nowrap">${i.status!=='Paid'?`<button class="btn btn-sm btn-gold" onclick="markPaid('${i.id}')">Paid</button> `:''}<button class="btn btn-sm" onclick="editInvoice('${i.id}')">Edit</button> <button class="btn-danger" onclick="delRow('invoices','${i.id}',renderInvoices)">×</button></td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// EXPENSES
+// ═══════════════════════════════════════════════
+function calcExpGST(){
+  const a=parseFloat(document.getElementById('exp-amount').value||0);
+  document.getElementById('exp-gst').value=(a*0.1).toFixed(2);
+  document.getElementById('exp-total').value=(a*1.1).toFixed(2);
+}
+function saveExpense(){
+  const eid=v('exp-id');
+  const e={id:eid||uid(),date:v('exp-date'),cat:v('exp-cat'),desc:v('exp-desc'),amount:parseFloat(v('exp-amount'))||0,gst:parseFloat(v('exp-gst'))||0,total:parseFloat(v('exp-total'))||0,receipt:v('exp-receipt')};
+  if(!e.desc||!e.amount){alert('Description and amount are required.');return;}
+  if(eid){const i=db.expenses.findIndex(x=>x.id===eid);if(i>-1)db.expenses[i]=e;}
+  else db.expenses.push(e);
+  save();closeModal('m-expense');renderExpenses();
+}
+function renderExpenses(){
+  const q=(v('s-expenses')||'').toLowerCase();
+  const rows=db.expenses.filter(e=>(e.desc+e.cat).toLowerCase().includes(q));
+  const tb=document.getElementById('t-expenses');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="8" class="empty-msg">No expenses yet.</td></tr>`;return;}
+  tb.innerHTML=rows.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${e.desc}</td><td>${e.cat}</td><td>${fmtMoney(e.amount)}</td><td>${fmtMoney(e.gst)}</td><td><strong>${fmtMoney(e.total)}</strong></td><td>${e.receipt||'—'}</td><td><button class="btn-danger" onclick="delRow('expenses','${e.id}',renderExpenses)">×</button></td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ACCOUNTS
+// ═══════════════════════════════════════════════
+function renderAccounts(){
+  const totalInv=db.invoices.reduce((s,i)=>s+i.total,0);
+  const totalPaid=db.invoices.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.total,0);
+  const totalOut=db.invoices.filter(i=>i.status!=='Paid').reduce((s,i)=>s+i.total,0);
+  const totalExp=db.expenses.reduce((s,e)=>s+e.total,0);
+  const profit=totalPaid-totalExp;
+
+  document.getElementById('acc-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Total invoiced</div><div class="metric-value">${fmtMoney(totalInv)}</div></div>
+    <div class="metric-card"><div class="metric-label">Total received</div><div class="metric-value" style="color:var(--green)">${fmtMoney(totalPaid)}</div></div>
+    <div class="metric-card"><div class="metric-label">Total expenses</div><div class="metric-value" style="color:var(--red)">${fmtMoney(totalExp)}</div></div>`;
+
+  const byStatus={};db.invoices.forEach(i=>byStatus[i.status]=(byStatus[i.status]||0)+i.total);
+  document.getElementById('acc-income').innerHTML=Object.entries(byStatus).map(([s,t])=>`<div class="acct-row"><span>${badge(s)} ${s}</span><span>${fmtMoney(t)}</span></div>`).join('')||'<div class="acct-row" style="color:var(--text3)">No invoices yet.</div>';
+  document.getElementById('acc-income-total').innerHTML=`<div class="acct-total"><span>Outstanding</span><span style="color:var(--red)">${fmtMoney(totalOut)}</span></div>`;
+
+  const invGST=db.invoices.reduce((s,i)=>s+i.gst,0);
+  const expGST=db.expenses.reduce((s,e)=>s+e.gst,0);
+  document.getElementById('acc-gst').innerHTML=`
+    <div class="acct-row"><span>GST collected (invoices)</span><span>${fmtMoney(invGST)}</span></div>
+    <div class="acct-row"><span>GST paid (expenses)</span><span>${fmtMoney(expGST)}</span></div>
+    <div class="acct-total"><span>Net GST payable</span><span style="color:${invGST-expGST>=0?'var(--red)':'var(--green)'}">  ${fmtMoney(invGST-expGST)}</span></div>`;
+
+  const byCat={};db.expenses.forEach(e=>byCat[e.cat]=(byCat[e.cat]||0)+e.total);
+  document.getElementById('acc-exp').innerHTML=Object.entries(byCat).map(([c,t])=>`<div class="acct-row"><span>${c}</span><span>${fmtMoney(t)}</span></div>`).join('')||'<div class="acct-row" style="color:var(--text3)">No expenses yet.</div>';
+  document.getElementById('acc-exp-total').innerHTML=`<div class="acct-total"><span>Total</span><span style="color:var(--red)">${fmtMoney(totalExp)}</span></div>`;
+
+  document.getElementById('acc-profit').innerHTML=`<h3>Net position</h3><div class="amount" style="color:${profit>=0?'#7debb0':'#ff8a8a'}">${fmtMoney(profit)}</div><div class="sub">Income received minus total expenses</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDashboard(){
+  const t=today();
+  const now=new Date();
+  const activeC=db.clients.filter(c=>c.status==='Active').length;
+  const openM=db.matters.filter(m=>m.status==='Open'||m.status==='In progress').length;
+  const mn=now.getMonth(),yr=now.getFullYear();
+  const mthInv=db.invoices.filter(i=>{if(!i.date)return false;const d=new Date(i.date);return d.getMonth()===mn&&d.getFullYear()===yr;}).reduce((s,i)=>s+i.total,0);
+  const outstanding=db.invoices.filter(i=>i.status!=='Paid').reduce((s,i)=>s+i.total,0);
+  const overdue=db.invoices.filter(i=>i.status==='Overdue');
+
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Active clients</div><div class="metric-value">${activeC}</div></div>
+    <div class="metric-card"><div class="metric-label">Open matters</div><div class="metric-value">${openM}</div></div>
+    <div class="metric-card"><div class="metric-label">Invoiced this month</div><div class="metric-value">${fmtMoney(mthInv)}</div></div>
+    <div class="metric-card"><div class="metric-label">Outstanding</div><div class="metric-value">${fmtMoney(outstanding)}${overdue.length?`<div class="metric-sub warn">${overdue.length} overdue</div>`:''}</div></div>`;
+
+  const alerts=document.getElementById('dash-alerts');
+  alerts.innerHTML='';
+  if(overdue.length)alerts.innerHTML+=`<div class="alert alert-amber">⚠ You have ${overdue.length} overdue invoice${overdue.length>1?'s':''} totalling ${fmtMoney(overdue.reduce((s,i)=>s+i.total,0))}. <a href="#" onclick="showPage('invoices')" style="color:inherit;font-weight:600;text-decoration:underline">View invoices</a></div>`;
+
+  const upcoming=db.appointments.filter(a=>a.date>=t).slice(0,5);
+  const apptDiv=document.getElementById('dash-appts');
+  apptDiv.innerHTML=upcoming.length?upcoming.map(a=>`<div class="dash-row"><div class="dash-row-left"><strong>${fmtDate(a.date)} ${a.time?'@ '+a.time:''}</strong><small>${clientName(a.client)} — ${a.type}</small></div>${badge(a.type)}</div>`).join(''):'<div class="empty-msg">No upcoming appointments</div>';
+
+  const recentInv=db.invoices.slice(-5).reverse();
+  const invDiv=document.getElementById('dash-invs');
+  invDiv.innerHTML=recentInv.length?recentInv.map(i=>`<div class="dash-row"><div class="dash-row-left"><strong>${i.num}</strong><small>${clientName(i.client)}</small></div><div style="text-align:right">${fmtMoney(i.total)}<br>${badge(i.status)}</div></div>`).join(''):'<div class="empty-msg">No invoices yet</div>';
+
+  const openMList=db.matters.filter(m=>m.status==='Open'||m.status==='In progress').slice(0,6);
+  const mDiv=document.getElementById('dash-matters-list');
+  mDiv.innerHTML=openMList.length?openMList.map(m=>`<div class="dash-row"><div class="dash-row-left"><strong>${m.ref}</strong><small>${clientName(m.client)} — ${m.desc}</small></div>${badge(m.status)}</div>`).join(''):'<div class="empty-msg">No open matters</div>';
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function delRow(type,id,cb){
+  if(!confirm('Delete this record? This cannot be undone.'))return;
+  db[type]=db[type].filter(r=>r.id!==id);
+  save();if(cb)cb();
+}
+function clearForm(fields){fields.forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});}
+function setFields(map,obj){
+  Object.entries(map).forEach(([key,elId])=>{
+    const el=document.getElementById(elId);
+    if(el&&obj[key]!==undefined)el.value=obj[key];
+  });
+}
+</script>
+</body>
+</html>
