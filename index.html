@@ -286,8 +286,9 @@ tbody tr:hover td{background:#fafaf8}
           <button class="btn btn-primary" onclick="openModal('m-expense')">+ New expense</button>
         </div>
         <div class="card"><div class="table-wrap"><table>
-          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>GST</th><th>Total</th><th>Receipt</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount incl. GST</th><th>GST</th><th>Total excl. GST</th><th>Receipt</th><th></th></tr></thead>
           <tbody id="t-expenses"></tbody>
+          <tfoot id="t-expenses-totals" style="display:none"><tr style="background:var(--navy)"><td colspan="3" style="padding:10px 16px;font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.05em">Totals</td><td id="exp-tot-amount" style="padding:10px 16px;font-size:13px;font-weight:700;color:#B8972A;text-align:right"></td><td id="exp-tot-gst" style="padding:10px 16px;font-size:13px;font-weight:700;color:#B8972A;text-align:right"></td><td id="exp-tot-total" style="padding:10px 16px;font-size:13px;font-weight:700;color:#B8972A;text-align:right"></td><td colspan="2" style="padding:10px 16px;background:var(--navy)"></td></tr></tfoot>
         </table></div></div>
       </div>
 
@@ -882,8 +883,13 @@ function renderExpenses(){
   var q=(v('s-expenses')||'').toLowerCase();
   var rows=db.expenses.filter(function(e){return(e.desc+e.cat).toLowerCase().indexOf(q)>-1;});
   var tb=document.getElementById('t-expenses');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="8" class="empty-msg">No expenses yet.</td></tr>';return;}
+  var tf=document.getElementById('t-expenses-totals');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="8" class="empty-msg">No expenses yet.</td></tr>';if(tf)tf.style.display='none';return;}
   tb.innerHTML=rows.map(function(e){return '<tr><td>'+fmtDate(e.date)+'</td><td>'+e.desc+'</td><td>'+e.cat+'</td><td>'+fmtMoney(e.amount)+'</td><td>'+fmtMoney(e.gst)+'</td><td><strong>'+fmtMoney(e.total)+'</strong></td><td>'+(e.receipt||'--')+'</td><td><button class="btn-danger" onclick="delRow(\'expenses\',\''+e.id+'\',renderExpenses)">&#215;</button></td></tr>';}).join('');
+  var totAmt=rows.reduce(function(s,e){return s+e.amount;},0);
+  var totGst=rows.reduce(function(s,e){return s+e.gst;},0);
+  var totExcl=rows.reduce(function(s,e){return s+e.total;},0);
+  if(tf){tf.style.display='';document.getElementById('exp-tot-amount').textContent=fmtMoney(totAmt);document.getElementById('exp-tot-gst').textContent=fmtMoney(totGst);document.getElementById('exp-tot-total').textContent=fmtMoney(totExcl);}
 }
 
 // ACCOUNTS
