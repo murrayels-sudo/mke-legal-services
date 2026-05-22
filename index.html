@@ -881,7 +881,7 @@ function saveExpense(){
 }
 function renderExpenses(){
   var q=(v('s-expenses')||'').toLowerCase();
-  var rows=db.expenses.filter(function(e){return(e.desc+e.cat).toLowerCase().indexOf(q)>-1;});
+  var rows=db.expenses.filter(function(e){return(e.desc+e.cat).toLowerCase().indexOf(q)>-1;}).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
   var tb=document.getElementById('t-expenses');
   var tf=document.getElementById('t-expenses-totals');
   if(!rows.length){tb.innerHTML='<tr><td colspan="8" class="empty-msg">No expenses yet.</td></tr>';if(tf)tf.style.display='none';return;}
